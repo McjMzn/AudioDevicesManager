@@ -1,5 +1,5 @@
 # AudioDevicesManager.js
-Simple audio devices manager based on Web Audio API which makes browsing available devices and working with audio streams much easier.
+AudioDevicesManager is a simple class, based on Web Audio API, that makes browsing available audio devices and working with audio streams much easier.
 
 ### Usage
 #### TL;DR;
