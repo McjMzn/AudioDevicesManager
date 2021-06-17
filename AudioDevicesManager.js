@@ -12,18 +12,45 @@ export class AudioDevicesManager {
         });
     }
     
+    async getAllDevicesAsync() {
+        return navigator.mediaDevices.enumerateDevices();
+    }
+
     async getInputDevicesAsync() {
-        let devices = await navigator.mediaDevices.enumerateDevices();
+        const devices = await navigator.mediaDevices.enumerateDevices();
         return devices.filter(device => device.kind === 'audioinput');
     }
     
     async getOutputDevicesAsync() {
-        let devices = await navigator.mediaDevices.enumerateDevices();
+        const devices = await navigator.mediaDevices.enumerateDevices();
         return devices.filter(device => device.kind === 'audiooutput');
     }
-    
-    async getAllDevicesAsync() {
-        return navigator.mediaDevices.enumerateDevices();
+   
+    findDeviceAsync(deviceIdentifier, devices) {
+        return new Promise((resolve, reject) => {
+            const matchedByLabel = devices.filter(device => device.label == deviceIdentifier);
+            const matchedByDeviceId = devices.filter(device => device.deviceId == deviceIdentifier);
+            const matched = matchedByLabel.concat(matchedByDeviceId);
+            if (matched.length === 0) {
+                reject(`Device '${deviceIdentifier}' not found.`);
+            }
+
+            if (matched.length > 1) {
+                reject(`Identifier '${deviceIdentifier}' does not allow for unambiguous device selection.`);
+            }
+
+            resolve(matched[0]);
+        });
+    }
+
+    async getInputDeviceAsync(deviceIdentifier) {
+        const inputDevices = await this.getInputDevicesAsync();
+        return this.findDeviceAsync(deviceIdentifier, inputDevices); 
+    }
+
+    async getOutputDeviceAsync(deviceIdentifier) {
+        const outputDevices = await this.getOutputDevicesAsync();
+        return this.findDeviceAsync(deviceIdentifier, outputDevices); 
     }
     
     async openDeviceStreamAsync(audioDevice) {
@@ -31,6 +58,9 @@ export class AudioDevicesManager {
     }
     
     async closeDeviceStreamAsync(audioStream) {
-        audioStream.getTracks().forEach(t => t.stop());
+        return new Promise((resolve, reject) => {
+            audioStream.getTracks().forEach(t => t.stop());
+            resolve();
+        });
     }
 }
